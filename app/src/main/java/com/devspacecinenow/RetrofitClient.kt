@@ -1,5 +1,6 @@
 package com.devspacecinenow
 
+import com.google.gson.internal.GsonBuildConfig
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -14,7 +15,7 @@ object RetrofitClient {
     private val httpClient: OkHttpClient
         get() {
             val clientBuilder = OkHttpClient.Builder()
-            val token = ""
+            val token = BuildConfig.API_KEY
 
             clientBuilder.addInterceptor { chain ->
                 val original: Request = chain.request()
@@ -28,9 +29,9 @@ object RetrofitClient {
         }
 
 
-    val retrofitInstance : Retrofit = Retrofit.Builder()
+    val retrofitInstance: Retrofit = Retrofit.Builder()
         .client(httpClient)
-        .baseUrl("")
+        .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 }

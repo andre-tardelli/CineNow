@@ -6,6 +6,6 @@ import retrofit2.http.GET
 interface ApiService {
 
     @GET("now_playing?language=en-US&page=1")
-    fun getNowPlayingMovie() : Call<List<Unit>>
+    fun getNowPlayingMovie() : Call<MovieResponse>
 
 }
