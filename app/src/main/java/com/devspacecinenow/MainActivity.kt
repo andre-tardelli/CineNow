@@ -50,11 +50,13 @@ class MainActivity : ComponentActivity() {
             CineNowTheme {
 
                 var nowPlayingMovies by remember { mutableStateOf<List<MovieDto>>(emptyList()) }
+                var topRatedMovies by remember { mutableStateOf<List<MovieDto>>(emptyList()) }
+                var popularMovies by remember { mutableStateOf<List<MovieDto>>(emptyList()) }
+                var upcomingMovies by remember { mutableStateOf<List<MovieDto>>(emptyList()) }
 
                 val apiService = RetrofitClient.retrofitInstance.create(ApiService::class.java)
 
                 val callNowPlaying = apiService.getNowPlayingMovie()
-
                 callNowPlaying.enqueue(object : Callback<MovieResponse>{
                     override fun onResponse(
                         call: Call<MovieResponse>,
@@ -69,21 +71,83 @@ class MainActivity : ComponentActivity() {
                             Log.d("MainActivity", "Request Error :: ${response.errorBody()}")
                         }
                     }
+                    override fun onFailure(call: Call<MovieResponse>, t: Throwable) {
+                        Log.d("MainActivity", "NetWork Error :: ${t.message}")
+                    }
+                })
+
+                val callTopRatedMovies = apiService.getTopRatedMovies()
+                callTopRatedMovies.enqueue(object : Callback<MovieResponse> {
+                    override fun onResponse(
+                        call: Call<MovieResponse>,
+                        response: Response<MovieResponse>
+                    ) {
+                        if (response.isSuccessful) {
+                            val movies = response.body()?.results
+                            if(movies != null){
+                                topRatedMovies = movies
+                            }
+                        } else {
+                            Log.d("MainActivity", "Request Error :: ${response.errorBody()}")
+                        }
+                    }
 
                     override fun onFailure(call: Call<MovieResponse>, t: Throwable) {
                         Log.d("MainActivity", "NetWork Error :: ${t.message}")
+                    }
+                })
 
+                val callPopularMovies = apiService.getPopularMovies()
+                callPopularMovies.enqueue(object : Callback<MovieResponse> {
+                    override fun onResponse(
+                        call: Call<MovieResponse>,
+                        response: Response<MovieResponse>
+                    ) {
+                        if (response.isSuccessful) {
+                            val movies = response.body()?.results
+                            if(movies != null){
+                                popularMovies = movies
+                            }
+                        } else {
+                            Log.d("MainActivity", "Request Error :: ${response.errorBody()}")
+                        }
+                    }
+
+                    override fun onFailure(call: Call<MovieResponse>, t: Throwable) {
+                        Log.d("MainActivity", "NetWork Error :: ${t.message}")
                     }
 
                 })
 
+                val callUpcomingMovies = apiService.getUpcomingMovies()
+                callUpcomingMovies.enqueue(object : Callback<MovieResponse> {
+                    override fun onResponse(
+                        call: Call<MovieResponse>,
+                        response: Response<MovieResponse>
+                    ) {
+                        if (response.isSuccessful) {
+                            val movies = response.body()?.results
+                            if(movies != null){
+                                upcomingMovies = movies
+                            }
+                        } else {
+                            Log.d("MainActivity", "Request Error :: ${response.errorBody()}")
+                        }
+                    }
+
+                    override fun onFailure(call: Call<MovieResponse>, t: Throwable) {
+                        Log.d("MainActivity", "NetWork Error :: ${t.message}")
+                    }
+
+                })
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
                         Text(
@@ -91,24 +155,40 @@ class MainActivity : ComponentActivity() {
                             fontSize = 40.sp,
                             fontWeight = FontWeight.SemiBold,
                             text = "CineNow",
-
                         )
 
+                        MovieSession(
+                            label = "Top Rated",
+                            movieList = topRatedMovies,
+                            onClick = { movieClicked->
+                            }
+                        )
 
-                    MovieSession(
-                        label = "Now Playing",
-                        movieList = nowPlayingMovies,
-                        onClick = { movieClicked->
+                        MovieSession(
+                            label = "Popular",
+                            movieList = popularMovies,
+                            onClick = { movieClicked->
+                            }
+                        )
 
-
+                        MovieSession(
+                            label = "Upcoming",
+                            movieList = upcomingMovies,
+                            onClick = { movieClicked->
+                            }
+                        )
+                        MovieSession(
+                            label = "Now Playing",
+                            movieList = nowPlayingMovies,
+                            onClick = { movieClicked->
                         }
-                       )
+                        )
                     }
                     }
+                }
             }
         }
     }
-}
 
 @Composable
 fun MovieSession(
@@ -117,7 +197,8 @@ fun MovieSession(
     onClick: (MovieDto) -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(8.dp)
     ) {
         Text(
@@ -140,7 +221,7 @@ fun MovieList(
             MovieItem (
                 movieDto = it,
                 onClick = onClick
-                )
+            )
         }
     }
 }
@@ -150,13 +231,12 @@ fun MovieItem(
     movieDto: MovieDto,
     onClick: (MovieDto) -> Unit
 ) {
-
     Column (
         modifier = Modifier
             .width(IntrinsicSize.Min)
             .clickable {
-            onClick.invoke(movieDto)
-    }
+                onClick.invoke(movieDto)
+            }
     ){
         AsyncImage(
             modifier = Modifier
@@ -178,6 +258,5 @@ fun MovieItem(
             overflow = TextOverflow.Ellipsis,
             text = movieDto.overview
         )
-
     }
 }
